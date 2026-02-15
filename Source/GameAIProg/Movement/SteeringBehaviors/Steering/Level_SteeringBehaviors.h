@@ -35,10 +35,11 @@ private:
 		Seek,
 		Wander,
 		Flee,
+		Face,
 		Arrive,
 		Evade,
 		Pursuit,
-		Face,
+
 
 		// @ End
 		Count
