@@ -211,6 +211,7 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	SteeringOutput SteeringOutput;
 	Agent.SetMaxLinearSpeed(300.f);
 	const float MaxSpeed = 500.f;
+	const float evadeRadius = 200.f;
 
 	FVector2D AgentPos = FVector2D(Agent.GetActorLocation());
 	FVector2D TargetPos = Target.Position;
@@ -227,8 +228,15 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 	FVector2D PredictedPosition = TargetPos + FVector2D(Target.LinearVelocity) * PredictionTime;
 	FVector2D DesiredVelocity = (AgentPos - PredictedPosition).GetSafeNormal() * MaxSpeed;
+	
+	
+	if((AgentPos - PredictedPosition).Length() < evadeRadius) SteeringOutput.LinearVelocity = DesiredVelocity;
 
-	SteeringOutput.LinearVelocity = DesiredVelocity;
+
+
+
+
+
 
 	//Debug Render 
 	FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
@@ -249,7 +257,11 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
 	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * SteeringOutput.LinearVelocity.Length() * 100.f, FColor::Cyan);
 	DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+	DrawDebugCircle(Agent.GetWorld(), FVector(PredictedPosition.X, PredictedPosition.Y, 0.f), 10.f, 32, FColor::Magenta, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+	DrawDebugCircle(Agent.GetWorld(), lineStart, evadeRadius, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
 
+
+	SteeringOutput.LinearVelocity.Normalize();
 	return SteeringOutput;
 
 
@@ -303,6 +315,7 @@ SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
 	DrawDebugCircle(Agent.GetWorld(), FVector(CircleCenter.X, CircleCenter.Y,0), CircleRadius, 32, FColor::Blue, false,-1.f,0,1.f,FVector(1, 0, 0),FVector(0, 1, 0),false);
 
+	SteeringOutput.LinearVelocity.Normalize();
 	return SteeringOutput;
 
 
