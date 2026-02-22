@@ -19,9 +19,17 @@ void ALevel_CombinedSteering::BeginPlay()
 {
 	Super::BeginPlay();
 	DrunkAgent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, FVector{0,0,90}, FRotator::ZeroRotator);
-	m_BlendedSteering = new BlendedSteering({BlendedSteering::WeightedBehavior{new Seek, 25.f},BlendedSteering::WeightedBehavior{new Wander, 50.f}});
-	
+	m_BlendedSteering = new BlendedSteering({BlendedSteering::WeightedBehavior{new Seek, 50.f},BlendedSteering::WeightedBehavior{new Wander, 50.f}});
 	DrunkAgent->SetSteeringBehavior(m_BlendedSteering);
+	
+	
+	
+
+	
+	
+	EvadingAgent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, FVector{90,0,90}, FRotator::ZeroRotator);
+	m_PrioritySteering = new PrioritySteering({new Evade,new Wander});
+	EvadingAgent->SetSteeringBehavior(m_PrioritySteering);
 
 }
 
@@ -109,6 +117,16 @@ void ALevel_CombinedSteering::Tick(float DeltaTime)
 	// Combined Steering Update
  // TODO: implement handling mouse click input for seek
 	m_BlendedSteering->SetTarget(MouseTarget);
+	
+	
+	FTargetData Target;
+	Target.Position = DrunkAgent->GetPosition();
+	Target.Orientation = DrunkAgent->GetRotation();
+	Target.LinearVelocity = DrunkAgent->GetLinearVelocity();
+	Target.AngularVelocity = DrunkAgent->GetAngularVelocity();
+	m_PrioritySteering->SetTarget(Target);
+	
+	//m_PrioritySteering->SetTarget(MouseTarget);
 	
  // TODO: implement Make sure to also evade the wanderer
 }

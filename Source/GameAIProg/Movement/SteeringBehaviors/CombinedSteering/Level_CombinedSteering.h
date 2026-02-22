@@ -36,6 +36,7 @@ private:
 	BlendedSteering* m_BlendedSteering;
 	
 	ASteeringAgent* EvadingAgent;
+	PrioritySteering* m_PrioritySteering;
 
 	
 };

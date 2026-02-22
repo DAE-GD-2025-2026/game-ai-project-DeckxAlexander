@@ -210,6 +210,7 @@ SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
 	SteeringOutput SteeringOutput;
+	SteeringOutput.IsValid = true;
 	Agent.SetMaxLinearSpeed(300.f);
 	const float MaxSpeed = 500.f;
 	const float evadeRadius = 200.f;
@@ -232,13 +233,8 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	
 	
 	if((AgentPos - PredictedPosition).Length() < evadeRadius) SteeringOutput.LinearVelocity = DesiredVelocity;
-
-
-
-
-
-
-
+	else SteeringOutput.IsValid = false;
+	
 	//Debug Render 
 	FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
 	FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
