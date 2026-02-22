@@ -1,4 +1,6 @@
 #include "Level_CombinedSteering.h"
+#include "CombinedSteeringBehaviors.h"
+#include <memory>
 
 #include "imgui.h"
 
@@ -8,12 +10,18 @@ ALevel_CombinedSteering::ALevel_CombinedSteering()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
+	
 }
 
 // Called when the game starts or when spawned
 void ALevel_CombinedSteering::BeginPlay()
 {
 	Super::BeginPlay();
+	DrunkAgent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, FVector{0,0,90}, FRotator::ZeroRotator);
+	m_BlendedSteering = new BlendedSteering({BlendedSteering::WeightedBehavior{new Seek, 25.f},BlendedSteering::WeightedBehavior{new Wander, 50.f}});
+	
+	DrunkAgent->SetSteeringBehavior(m_BlendedSteering);
 
 }
 
@@ -100,5 +108,7 @@ void ALevel_CombinedSteering::Tick(float DeltaTime)
 	
 	// Combined Steering Update
  // TODO: implement handling mouse click input for seek
+	m_BlendedSteering->SetTarget(MouseTarget);
+	
  // TODO: implement Make sure to also evade the wanderer
 }

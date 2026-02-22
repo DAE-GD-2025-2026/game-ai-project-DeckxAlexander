@@ -32,7 +32,8 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart+ AgentForwardEnd * 100.f,  FColor::Magenta);
 	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * steeringOutput.LinearVelocity.Length() * 100.f, FColor::Cyan);
 	DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
-
+	UE_LOG(LogTemp, Warning, TEXT("Vector: %s"), *TargetPosition.ToString());
+	
 	return steeringOutput;
 
 

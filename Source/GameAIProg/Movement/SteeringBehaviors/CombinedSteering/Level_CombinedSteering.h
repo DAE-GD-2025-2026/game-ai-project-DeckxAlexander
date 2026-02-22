@@ -31,6 +31,11 @@ private:
 	//Datamembers
 	bool UseMouseTarget = false;
 	bool CanDebugRender = false;
+	
+	ASteeringAgent* DrunkAgent;
+	BlendedSteering* m_BlendedSteering;
+	
+	ASteeringAgent* EvadingAgent;
 
 	
 };
