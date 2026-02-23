@@ -16,7 +16,7 @@ void ALevel_Flocking::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TrimWorld->SetTrimWorldSize(3000.f);
+	TrimWorld->SetTrimWorldSize(1500.f);
 	TrimWorld->bShouldTrimWorld = true;
 
 	pFlock = TUniquePtr<Flock>(
@@ -40,5 +40,13 @@ void ALevel_Flocking::Tick(float DeltaTime)
 	pFlock->RenderDebug();
 	if (bUseMouseTarget)
 		pFlock->SetTarget_Seek(MouseTarget);
+	
+	ImGui::Checkbox("Trim World", &TrimWorld->bShouldTrimWorld);
+	if (TrimWorld->bShouldTrimWorld)
+	{
+		ImGuiHelpers::ImGuiSliderFloatWithSetter("Trim Size",
+			TrimWorld->GetTrimWorldSize(), 1000.f, 3000.f,
+			[this](float InVal) { TrimWorld->SetTrimWorldSize(InVal); });
+	}
 }
 

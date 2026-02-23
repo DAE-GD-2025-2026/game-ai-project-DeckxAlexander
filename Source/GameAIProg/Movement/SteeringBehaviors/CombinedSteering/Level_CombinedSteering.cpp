@@ -19,14 +19,9 @@ void ALevel_CombinedSteering::BeginPlay()
 {
 	Super::BeginPlay();
 	DrunkAgent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, FVector{0,0,90}, FRotator::ZeroRotator);
-	m_BlendedSteering = new BlendedSteering({BlendedSteering::WeightedBehavior{new Seek, 50.f},BlendedSteering::WeightedBehavior{new Wander, 50.f}});
+	m_BlendedSteering = new BlendedSteering({BlendedSteering::WeightedBehavior{new Seek, 1.f},BlendedSteering::WeightedBehavior{new Wander, 1.f}});
 	DrunkAgent->SetSteeringBehavior(m_BlendedSteering);
-	
-	
-	
 
-	
-	
 	EvadingAgent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, FVector{90,0,90}, FRotator::ZeroRotator);
 	m_PrioritySteering = new PrioritySteering({new Evade,new Wander});
 	EvadingAgent->SetSteeringBehavior(m_PrioritySteering);
@@ -101,13 +96,13 @@ void ALevel_CombinedSteering::Tick(float DeltaTime)
 		ImGui::Spacing();
 
 
-		// ImGuiHelpers::ImGuiSliderFloatWithSetter("Seek",
-		// 	pBlendedSteering->GetWeightedBehaviorsRef()[0].Weight, 0.f, 1.f,
-		// 	[this](float InVal) { pBlendedSteering->GetWeightedBehaviorsRef()[0].Weight = InVal; }, "%.2f");
-		//
-		// ImGuiHelpers::ImGuiSliderFloatWithSetter("Wander",
-		// pBlendedSteering->GetWeightedBehaviorsRef()[1].Weight, 0.f, 1.f,
-		// [this](float InVal) { pBlendedSteering->GetWeightedBehaviorsRef()[1].Weight = InVal; }, "%.2f");
+		ImGuiHelpers::ImGuiSliderFloatWithSetter("Seek",
+		m_BlendedSteering->GetWeightedBehaviorsRef()[0].Weight, 0.f, 1.f,
+		 	[this](float InVal) { m_BlendedSteering->GetWeightedBehaviorsRef()[0].Weight = InVal; }, "%.2f");
+		
+		 ImGuiHelpers::ImGuiSliderFloatWithSetter("Wander",
+		 m_BlendedSteering->GetWeightedBehaviorsRef()[1].Weight, 0.f, 1.f,
+		 [this](float InVal) { m_BlendedSteering->GetWeightedBehaviorsRef()[1].Weight = InVal; }, "%.2f");
 	
 		//End
 		ImGui::End();
