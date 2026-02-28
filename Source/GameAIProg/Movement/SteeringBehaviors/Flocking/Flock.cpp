@@ -15,7 +15,16 @@ Flock::Flock(
 	, pAgentToEvade{pAgentToEvade}
 {
 	Agents.SetNum(FlockSize);
+	
+#ifndef GAMEAI_USE_SPACE_PARTITIONING
 	Neighbors.SetNum(FlockSize);	
+#else
+	
+	//float floatcellSize = WorldSize / static_cast<float>(NrOfCellsX);
+	//UE_LOG(LogTemp, Warning, TEXT("Value: %f"), floatcellSize);
+	pPartitionedSpace = std::make_unique<CellSpace>(pWorld, WorldSize*2, WorldSize*2, NrOfCellsX, NrOfCellsX, FlockSize);
+	OldPositions.SetNum(FlockSize);
+#endif
 	NrOfNeighbors = 0;
 	
 	pCohesionBehavior = std::make_unique<Cohesion>(this);
@@ -32,10 +41,22 @@ Flock::Flock(
 		FVector spawnPos = FVector(FMath::RandRange(-WorldSize, WorldSize),FMath::RandRange(-WorldSize, WorldSize),90.f);
 
 		ASteeringAgent* pAgent = pWorld->SpawnActor<ASteeringAgent>(AgentClass, spawnPos, FRotator::ZeroRotator);
+		
+		while (!pAgent)
+		{
+			spawnPos = FVector(FMath::RandRange(-WorldSize, WorldSize),FMath::RandRange(-WorldSize, WorldSize),90.f);
+			pAgent = pWorld->SpawnActor<ASteeringAgent>(AgentClass, spawnPos, FRotator::ZeroRotator);
+		}
+		
 		if (pAgent)
 		{
 			pAgent->SetActorTickEnabled(false);
 			Agents[i] = pAgent;
+			
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+			pPartitionedSpace.get()->AddAgent(pAgent);
+			OldPositions[i] = pAgent->GetPosition();
+#endif
 		}
 	}
 	
@@ -53,15 +74,30 @@ Flock::~Flock()
 
 void Flock::Tick(float DeltaTime)
 {
-	for (ASteeringAgent* Agent : Agents)
-	{
-		if (!Agent) continue;
-		RegisterNeighbors(Agent);
-		Agent->SetSteeringBehavior(pBlendedSteeringBehavior.get());
-		Agent->Tick(DeltaTime);
+
+#ifndef GAMEAI_USE_SPACE_PARTITIONING
+		for (ASteeringAgent* Agent : Agents)
+		{
+			if (!Agent) continue;
+			RegisterNeighbors(Agent);
+			Agent->SetSteeringBehavior(pBlendedSteeringBehavior.get());
+			Agent->Tick(DeltaTime);
+		}
+#else
+		for (int i = 0; i < Agents.Num(); ++i)
+		{
+			if (!Agents[i]) continue;
+			pPartitionedSpace->UpdateAgentCell(Agents[i], OldPositions[i]);
+			pPartitionedSpace->RegisterNeighbors(Agents[i], NeighborhoodRadius);
+			Agents[i]->SetSteeringBehavior(pBlendedSteeringBehavior.get());
+			Agents[i]->Tick(DeltaTime);
+			OldPositions[i] = Agents[i]->GetPosition();
+		}
+#endif
+		
 
 		
-	}
+	
 	
  // TODO: update the flock
  // TODO: for every agent:
@@ -74,6 +110,7 @@ void Flock::RenderDebug()
 {
  // TODO: Render all the agents in the flock
 	RenderNeighborhood();
+	pPartitionedSpace->RenderCells();
 }
 
 void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
@@ -154,7 +191,6 @@ void Flock::RenderNeighborhood()
 		return;
 
 	ASteeringAgent* First = Agents[0];
-	//DrawDebugCircle(pWorld,First->GetActorLocation(),NeighborhoodRadius,32,FColor::Green,false,-1.f,0,1.f,FVector(1,0,0),FVector(0,1,0),false);
 	DrawDebugCircle(First->GetWorld(), First->GetActorLocation(), 200.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
 }
 
@@ -190,13 +226,26 @@ FVector2D Flock::GetAverageNeighborPos() const
 	FVector2D avgPosition = FVector2D::ZeroVector;
 	
 	if (NrOfNeighbors == 0) return avgPosition;
-	
-	for (int i = 0; i < NrOfNeighbors; ++i)
-	{
-		avgPosition += Neighbors[i]->GetPosition();
-	}
 
-	return avgPosition / NrOfNeighbors;
+	
+
+#ifndef GAMEAI_USE_SPACE_PARTITIONING
+		for (int i = 0; i < NrOfNeighbors; ++i)
+		{
+			avgPosition += Neighbors[i]->GetPosition();
+		}
+		return avgPosition / NrOfNeighbors;
+#else
+	for (int i = 0; i < pPartitionedSpace->GetNrOfNeighbors(); ++i)
+	{
+		avgPosition += pPartitionedSpace->GetNeighbors()[i]->GetPosition();
+	}
+	return avgPosition / pPartitionedSpace->GetNrOfNeighbors();
+#endif
+		
+	
+
+	
 	
 }
 
@@ -204,14 +253,27 @@ FVector2D Flock::GetAverageNeighborVelocity() const
 {
 	FVector2D avgVelocity = FVector2D::ZeroVector;
 
-	if (NrOfNeighbors == 0) return avgVelocity;
 	
+	
+	
+#ifndef GAMEAI_USE_SPACE_PARTITIONING
+	if (NrOfNeighbors == 0) return avgVelocity;
 	for (int i = 0; i < NrOfNeighbors; ++i)
 	{
 		avgVelocity += FVector2D(Neighbors[i]->GetVelocity());
 	}
-
 	return avgVelocity / NrOfNeighbors;
+#else
+	if (pPartitionedSpace->GetNrOfNeighbors() == 0) return avgVelocity;
+	for (int i = 0; i < pPartitionedSpace->GetNrOfNeighbors(); ++i)
+	{
+		avgVelocity += FVector2D(pPartitionedSpace->GetNeighbors()[i]->GetVelocity());
+	}
+	return avgVelocity / pPartitionedSpace->GetNrOfNeighbors();
+#endif
+	
+
+	
 	
 }
 

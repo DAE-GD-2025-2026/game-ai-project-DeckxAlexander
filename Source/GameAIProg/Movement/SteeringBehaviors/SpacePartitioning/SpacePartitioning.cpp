@@ -43,24 +43,109 @@ CellSpace::CellSpace(UWorld* pWorld, float Width, float Height, int Rows, int Co
 	CellHeight = Height / Rows;
 
 	// TODO create the cells
+	
+	
+	FVector2D bottomLeft{-Width/2.f, -Height/2.f};
+	CellOrigin.X = -Width/2.f;
+	CellOrigin.Y = -Height/2.f;
+
+	Cells.reserve(NrOfRows * NrOfCols);
+
+	for (int row = 0; row < NrOfRows; ++row)
+	{
+		for (int col = 0; col < NrOfCols; ++col)
+		{
+			float left   = col * CellWidth + CellOrigin.X;
+			float bottom = row * CellHeight + CellOrigin.Y;
+
+			float right  = left + CellWidth;
+			float top    = bottom + CellHeight;
+
+			FRect bounds;
+			bounds.Min = FVector2D(left,  bottom);
+			bounds.Max = FVector2D(right, top);
+
+			Cells.emplace_back(left, bottom, CellWidth, CellHeight);
+			Cells.back().BoundingBox = bounds;
+		}
+	}
 }
 
-void CellSpace::AddAgent(ASteeringAgent& Agent)
+void CellSpace::AddAgent(ASteeringAgent* Agent)
 {
 	// TODO Add the agent to the correct cell
+	int index = PositionToIndex(Agent->GetPosition());
+	if (index < NrOfRows * NrOfCols) Cells[index].Agents.push_back(Agent);
 }
 
-void CellSpace::UpdateAgentCell(ASteeringAgent& Agent, const FVector2D& OldPos)
+void CellSpace::UpdateAgentCell(ASteeringAgent* Agent, const FVector2D& OldPos)
 {
 	//TODO Check if the agent needs to be moved to another cell.
 	//TODO Use the calculated index for oldPos and currentPos for this
+	
+	int oldIndex = PositionToIndex(OldPos);
+	int newIndex = PositionToIndex(Agent->GetPosition());
+
+	if (oldIndex == newIndex)
+		return;
+
+	// Remove from old cell
+	Cells[oldIndex].Agents.remove(Agent);
+
+	// Add to new cell
+	Cells[newIndex].Agents.push_back(Agent);
+
 }
 
-void CellSpace::RegisterNeighbors(ASteeringAgent& Agent, float QueryRadius)
+void CellSpace::RegisterNeighbors(ASteeringAgent* Agent, float QueryRadius)
 {
 	// TODO Register the neighbors for the provided agent
 	// TODO Only check the cells that are within the radius of the neighborhood
+	
+	NrOfNeighbors = 0;
+
+	const FVector2D pos = Agent->GetPosition();
+	const float radiusSq = QueryRadius * QueryRadius;
+
+	FRect queryRect;
+	queryRect.Min = FVector2D(
+		pos.X - QueryRadius,
+		pos.Y - QueryRadius);
+
+	queryRect.Max = FVector2D(
+		pos.X + QueryRadius,
+		pos.Y + QueryRadius);
+	
+	
+	for (int row = 0; row < NrOfRows; ++row)
+	{
+		for (int col = 0; col < NrOfCols; ++col)
+		{
+			int index = row * NrOfCols + col;
+			
+
+			if (!DoRectsOverlap( Cells[index].BoundingBox, queryRect))
+				continue;
+
+			for (ASteeringAgent* other :  Cells[index].Agents)
+			{
+
+				if (other == Agent || other == nullptr) continue;
+				float distSq = FVector2D::DistSquared(pos, other->GetPosition());
+
+				if (distSq <= radiusSq)
+				{
+					if (NrOfNeighbors < Neighbors.Num())
+					{
+						Neighbors[NrOfNeighbors] = other;
+						++NrOfNeighbors;
+					}
+				}
+			}
+		}
+	}
 }
+
 
 void CellSpace::EmptyCells()
 {
@@ -71,12 +156,54 @@ void CellSpace::EmptyCells()
 void CellSpace::RenderCells() const
 {
 	// TODO Render the cells with the number of agents inside of it
+	if (!pWorld) return;
+
+	for (const Cell& cell : Cells)
+	{
+		const FVector2D& min = cell.BoundingBox.Min;
+		const FVector2D& max = cell.BoundingBox.Max;
+
+	
+		FVector bl(min.X, min.Y, 0.f); 
+		FVector br(max.X, min.Y, 0.f); 
+		FVector tr(max.X, max.Y, 0.f); 
+		FVector tl(min.X, max.Y, 0.f); 
+
+
+		DrawDebugLine(pWorld, bl, br, FColor::White, false, -1.f, 0, 2.f);
+		DrawDebugLine(pWorld, br, tr, FColor::White, false, -1.f, 0, 2.f);
+		DrawDebugLine(pWorld, tr, tl, FColor::White, false, -1.f, 0, 2.f);
+		DrawDebugLine(pWorld, tl, bl, FColor::White, false, -1.f, 0, 2.f);
+
+
+		FVector center(
+			(min.X + max.X) * 0.5f,
+			(min.Y + max.Y) * 0.5f,
+			0.f);
+
+		FString countString = FString::FromInt(cell.Agents.size());
+
+		DrawDebugString(
+			pWorld,
+			center,
+			countString,
+			nullptr,
+			FColor::Green,
+			0.f,
+			true);
+	}
 }
 
 int CellSpace::PositionToIndex(FVector2D const & Pos) const
 {
-	// TODO Calculate the index of the cell based on the position
-	return 0;
+	int col = static_cast<int>((Pos.X - CellOrigin.X) / CellWidth);
+	int row = static_cast<int>((Pos.Y - CellOrigin.Y) / CellHeight);
+
+	// Clamp to grid
+	col = FMath::Clamp(col, 0, NrOfCols - 1);
+	row = FMath::Clamp(row, 0, NrOfRows - 1);
+
+	return row * NrOfCols + col;
 }
 
 bool CellSpace::DoRectsOverlap(FRect const & RectA, FRect const & RectB)
