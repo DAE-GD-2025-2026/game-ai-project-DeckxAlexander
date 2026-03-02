@@ -88,10 +88,11 @@ void Flock::Tick(float DeltaTime)
 		{
 			if (!Agents[i]) continue;
 			pPartitionedSpace->UpdateAgentCell(Agents[i], OldPositions[i]);
+			OldPositions[i] = Agents[i]->GetPosition();
 			pPartitionedSpace->RegisterNeighbors(Agents[i], NeighborhoodRadius);
 			Agents[i]->SetSteeringBehavior(pBlendedSteeringBehavior.get());
 			Agents[i]->Tick(DeltaTime);
-			OldPositions[i] = Agents[i]->GetPosition();
+
 		}
 #endif
 		
@@ -110,7 +111,9 @@ void Flock::RenderDebug()
 {
  // TODO: Render all the agents in the flock
 	RenderNeighborhood();
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
 	pPartitionedSpace->RenderCells();
+#endif
 }
 
 void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
@@ -225,17 +228,22 @@ FVector2D Flock::GetAverageNeighborPos() const
 {
 	FVector2D avgPosition = FVector2D::ZeroVector;
 	
-	if (NrOfNeighbors == 0) return avgPosition;
+
 
 	
 
 #ifndef GAMEAI_USE_SPACE_PARTITIONING
+	
+	if (NrOfNeighbors == 0) return avgPosition;
+	
 		for (int i = 0; i < NrOfNeighbors; ++i)
 		{
 			avgPosition += Neighbors[i]->GetPosition();
 		}
 		return avgPosition / NrOfNeighbors;
 #else
+	if (pPartitionedSpace->GetNrOfNeighbors() == 0) return avgPosition;
+	
 	for (int i = 0; i < pPartitionedSpace->GetNrOfNeighbors(); ++i)
 	{
 		avgPosition += pPartitionedSpace->GetNeighbors()[i]->GetPosition();
@@ -281,5 +289,7 @@ void Flock::SetTarget_Seek(FSteeringParams const& Target)
 {
  // TODO: Implement
 	pBlendedSteeringBehavior->SetTarget(Target);
+	
+	//UE_LOG(LogTemp, Warning, TEXT("Vector value: %s"), *Target.Position.ToString());
 }
 
