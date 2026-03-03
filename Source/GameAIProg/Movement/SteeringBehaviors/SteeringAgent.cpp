@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#include "AIController.h"
 #include "SteeringAgent.h"
+#include "AIController.h"
+
 
 
 // Sets default values

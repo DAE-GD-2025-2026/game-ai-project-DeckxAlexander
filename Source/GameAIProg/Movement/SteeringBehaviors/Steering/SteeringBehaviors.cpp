@@ -75,8 +75,7 @@ SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-
-	float TargetRadius{ 100.f };
+	
 	float SlowRadius{ 1000.f };
 	Agent.SetMaxLinearSpeed(300.f);
 

@@ -15,18 +15,14 @@ Flock::Flock(
 	, pAgentToEvade{pAgentToEvade}
 {
 	Agents.SetNum(FlockSize);
-	
 #ifndef GAMEAI_USE_SPACE_PARTITIONING
 	Neighbors.SetNum(FlockSize);	
 #else
-	
-	//float floatcellSize = WorldSize / static_cast<float>(NrOfCellsX);
-	//UE_LOG(LogTemp, Warning, TEXT("Value: %f"), floatcellSize);
 	pPartitionedSpace = std::make_unique<CellSpace>(pWorld, WorldSize*2, WorldSize*2, NrOfCellsX, NrOfCellsX, FlockSize);
 	OldPositions.SetNum(FlockSize);
 #endif
-	NrOfNeighbors = 0;
 	
+	NrOfNeighbors = 0;
 	pCohesionBehavior = std::make_unique<Cohesion>(this);
 	pSeparationBehavior = std::make_unique<Separation>(this);
 	pVelMatchBehavior = std::make_unique<Alignment>(this);
@@ -39,7 +35,6 @@ Flock::Flock(
 	for (int i = 0; i < FlockSize; ++i)
 	{
 		FVector spawnPos = FVector(FMath::RandRange(-WorldSize, WorldSize),FMath::RandRange(-WorldSize, WorldSize),90.f);
-
 		ASteeringAgent* pAgent = pWorld->SpawnActor<ASteeringAgent>(AgentClass, spawnPos, FRotator::ZeroRotator);
 		
 		while (!pAgent)
@@ -47,34 +42,24 @@ Flock::Flock(
 			spawnPos = FVector(FMath::RandRange(-WorldSize, WorldSize),FMath::RandRange(-WorldSize, WorldSize),90.f);
 			pAgent = pWorld->SpawnActor<ASteeringAgent>(AgentClass, spawnPos, FRotator::ZeroRotator);
 		}
-		
 		if (pAgent)
 		{
 			pAgent->SetActorTickEnabled(false);
 			Agents[i] = pAgent;
-			
 #ifdef GAMEAI_USE_SPACE_PARTITIONING
 			pPartitionedSpace.get()->AddAgent(pAgent);
 			OldPositions[i] = pAgent->GetPosition();
 #endif
 		}
 	}
-	
-	
- // TODO: initialize the flock and the memory pool
 }
 
 Flock::~Flock()
 {
- // TODO: Cleanup any additional data
-	
-
-	
 }
 
 void Flock::Tick(float DeltaTime)
 {
-
 #ifndef GAMEAI_USE_SPACE_PARTITIONING
 		for (ASteeringAgent* Agent : Agents)
 		{
@@ -95,21 +80,10 @@ void Flock::Tick(float DeltaTime)
 
 		}
 #endif
-		
-
-		
-	
-	
- // TODO: update the flock
- // TODO: for every agent:
-  // TODO: register the neighbors for this agent (-> fill the memory pool with the neighbors for the currently evaluated agent)
-  // TODO: update the agent (-> the steeringbehaviors use the neighbors in the memory pool)
-  // TODO: trim the agent to the world
 }
 
 void Flock::RenderDebug()
 {
- // TODO: Render all the agents in the flock
 	RenderNeighborhood();
 #ifdef GAMEAI_USE_SPACE_PARTITIONING
 	pPartitionedSpace->RenderCells();
@@ -188,11 +162,8 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 
 void Flock::RenderNeighborhood()
 {
- // TODO: Debugrender the neighbors for the first agent in the flock
-	
 	if (Agents.Num() == 0)
 		return;
-
 	ASteeringAgent* First = Agents[0];
 	DrawDebugCircle(First->GetWorld(), First->GetActorLocation(), 200.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
 }
@@ -200,7 +171,6 @@ void Flock::RenderNeighborhood()
 #ifndef GAMEAI_USE_SPACE_PARTITIONING
 void Flock::RegisterNeighbors(ASteeringAgent* const pAgent)
 {
- // TODO: Implement
 	NrOfNeighbors = 0;
 	for (ASteeringAgent* Other : Agents)
 	{
@@ -227,11 +197,6 @@ void Flock::RegisterNeighbors(ASteeringAgent* const pAgent)
 FVector2D Flock::GetAverageNeighborPos() const
 {
 	FVector2D avgPosition = FVector2D::ZeroVector;
-	
-
-
-	
-
 #ifndef GAMEAI_USE_SPACE_PARTITIONING
 	
 	if (NrOfNeighbors == 0) return avgPosition;
@@ -250,20 +215,11 @@ FVector2D Flock::GetAverageNeighborPos() const
 	}
 	return avgPosition / pPartitionedSpace->GetNrOfNeighbors();
 #endif
-		
-	
-
-	
-	
 }
 
 FVector2D Flock::GetAverageNeighborVelocity() const
 {
 	FVector2D avgVelocity = FVector2D::ZeroVector;
-
-	
-	
-	
 #ifndef GAMEAI_USE_SPACE_PARTITIONING
 	if (NrOfNeighbors == 0) return avgVelocity;
 	for (int i = 0; i < NrOfNeighbors; ++i)
@@ -279,17 +235,10 @@ FVector2D Flock::GetAverageNeighborVelocity() const
 	}
 	return avgVelocity / pPartitionedSpace->GetNrOfNeighbors();
 #endif
-	
-
-	
-	
 }
 
 void Flock::SetTarget_Seek(FSteeringParams const& Target)
 {
- // TODO: Implement
 	pBlendedSteeringBehavior->SetTarget(Target);
-	
-	//UE_LOG(LogTemp, Warning, TEXT("Vector value: %s"), *Target.Position.ToString());
 }
 
