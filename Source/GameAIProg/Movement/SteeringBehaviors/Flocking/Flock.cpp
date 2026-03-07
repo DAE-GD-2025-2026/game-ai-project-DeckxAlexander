@@ -96,7 +96,7 @@ void Flock::Tick(float DeltaTime)
 			pPartitionedSpace->RegisterNeighbors(Agents[i], NeighborhoodRadius);
 			Agents[i]->SetSteeringBehavior(pPrioritySteering.get());
 			Agents[i]->Tick(DeltaTime);
-			if (Agents[i]->GetDebugRenderingEnabled()) RenderNeighborhood(Agent);
+			if (Agents[i]->GetDebugRenderingEnabled()) RenderNeighborhood(Agents[i]);
 
 		}
 #endif
