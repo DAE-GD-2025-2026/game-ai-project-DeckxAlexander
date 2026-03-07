@@ -23,10 +23,11 @@ protected:
 
 	bool bUseMouseTarget{true};
 
-	int const FlockSize{1000};
+	int const FlockSize{200};
 
 	TUniquePtr<Flock> pFlock{};
 	
 	UPROPERTY(EditAnywhere, Category = "Flocking")
 	ASteeringAgent* pAgentToEvade{nullptr}; // non owning ref
+	std::unique_ptr<Seek> pSeekBehavior{};
 };

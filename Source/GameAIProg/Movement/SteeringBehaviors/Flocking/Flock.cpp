@@ -29,8 +29,23 @@ Flock::Flock(
 	pSeekBehavior = std::make_unique<Seek>();
 	pWanderBehavior = std::make_unique<Wander>();
 	
+	
 	pBlendedSteeringBehavior = std::make_unique<BlendedSteering>(std::vector<BlendedSteering::WeightedBehavior>{BlendedSteering::WeightedBehavior{pCohesionBehavior.get(),1.f}, BlendedSteering::WeightedBehavior{pSeparationBehavior.get(),1.f},
 	BlendedSteering::WeightedBehavior{pVelMatchBehavior.get(),1.f}, BlendedSteering::WeightedBehavior{pSeekBehavior.get(),0.5f}, BlendedSteering::WeightedBehavior{pWanderBehavior.get(), 0.5f}});
+	
+	if (pAgentToEvade != nullptr)
+	{
+		pEvadeBehavior = std::make_unique<Evade>();
+		FTargetData Target{pAgentToEvade->GetPosition(),pAgentToEvade->GetRotation(),pAgentToEvade->GetLinearVelocity(), pAgentToEvade->GetAngularVelocity() };
+		pEvadeBehavior->SetTarget(Target);
+		pPrioritySteering = std::make_unique<PrioritySteering>(std::vector<ISteeringBehavior*>{pEvadeBehavior.get(), pBlendedSteeringBehavior.get()});
+		
+	}
+	else
+	{
+		pPrioritySteering = std::make_unique<PrioritySteering>(std::vector<ISteeringBehavior*>{ pBlendedSteeringBehavior.get()});
+	}
+	
 	
 	for (int i = 0; i < FlockSize; ++i)
 	{
@@ -52,6 +67,8 @@ Flock::Flock(
 #endif
 		}
 	}
+	
+	Agents[0]->SetDebugRenderingEnabled(true);
 }
 
 Flock::~Flock()
@@ -65,7 +82,7 @@ void Flock::Tick(float DeltaTime)
 		{
 			if (!Agent) continue;
 			RegisterNeighbors(Agent);
-			Agent->SetSteeringBehavior(pBlendedSteeringBehavior.get());
+			Agent->SetSteeringBehavior(pPrioritySteering.get());
 			Agent->Tick(DeltaTime);
 		}
 #else
@@ -75,16 +92,31 @@ void Flock::Tick(float DeltaTime)
 			pPartitionedSpace->UpdateAgentCell(Agents[i], OldPositions[i]);
 			OldPositions[i] = Agents[i]->GetPosition();
 			pPartitionedSpace->RegisterNeighbors(Agents[i], NeighborhoodRadius);
-			Agents[i]->SetSteeringBehavior(pBlendedSteeringBehavior.get());
+			Agents[i]->SetSteeringBehavior(pPrioritySteering.get());
 			Agents[i]->Tick(DeltaTime);
 
 		}
 #endif
+	
+		if (pAgentToEvade != nullptr)
+		{
+			FTargetData Target{pAgentToEvade->GetPosition(),pAgentToEvade->GetRotation(),pAgentToEvade->GetLinearVelocity(), pAgentToEvade->GetAngularVelocity() };
+			pEvadeBehavior->SetTarget(Target);
+		}
 }
 
 void Flock::RenderDebug()
 {
 	RenderNeighborhood();
+	//Highlight Evade Target
+	if (pAgentToEvade != nullptr)
+	{
+
+		DrawDebugCircle(pAgentToEvade->GetWorld(), pAgentToEvade->GetActorLocation(), 30.f, 32, 
+			FColor::Yellow, false, -1.f, 0, 5.f, FVector(1, 0, 0), 
+			FVector(0, 1, 0), false);
+	}
+		
 #ifdef GAMEAI_USE_SPACE_PARTITIONING
 	pPartitionedSpace->RenderCells();
 #endif
@@ -240,5 +272,6 @@ FVector2D Flock::GetAverageNeighborVelocity() const
 void Flock::SetTarget_Seek(FSteeringParams const& Target)
 {
 	pBlendedSteeringBehavior->SetTarget(Target);
+	
 }
 

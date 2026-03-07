@@ -16,13 +16,8 @@
 class Flock final
 {
 public:
-	Flock(
-	UWorld* pWorld,
-	TSubclassOf<ASteeringAgent> AgentClass,
-	int FlockSize = 10, 
-	float WorldSize = 100.f, 
-	ASteeringAgent* const pAgentToEvade = nullptr, 
-	bool bTrimWorld = false);
+	Flock(UWorld* pWorld,TSubclassOf<ASteeringAgent> AgentClass,int FlockSize = 10, float WorldSize = 100.f, 
+		ASteeringAgent* const pAgentToEvade = nullptr, bool bTrimWorld = false);
 
 	~Flock();
 
@@ -70,6 +65,7 @@ private:
 	std::unique_ptr<BlendedSteering> pBlendedSteeringBehavior{};
 	std::unique_ptr<Seek> pSeekBehavior{};
 	std::unique_ptr<Wander> pWanderBehavior{};
+	std::unique_ptr<Evade> pEvadeBehavior{};
 	
 	std::unique_ptr<PrioritySteering> pPrioritySteering{};
 

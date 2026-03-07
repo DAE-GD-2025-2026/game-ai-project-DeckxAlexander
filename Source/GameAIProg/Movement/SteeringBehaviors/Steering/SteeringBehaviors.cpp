@@ -15,24 +15,22 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 
 	//Debug Render 
-	FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f};
-	FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f};
-	FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f};
-	FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f};
-	FVector2D Forward2D(
-		Agent.GetActorForwardVector().X,
-		Agent.GetActorForwardVector().Y
-	);
-	Forward2D.Normalize();
-
-	float Angle = FMath::Atan2(Forward2D ^ steeringOutput.LinearVelocity, FVector2D::DotProduct(Forward2D, steeringOutput.LinearVelocity));
-	FVector AngularDebug = Agent.GetActorRightVector() * Angle;
-
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart+AgentVelocityEnd * 0.5f,  FColor::Green);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart+ AgentForwardEnd * 100.f,  FColor::Magenta);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * steeringOutput.LinearVelocity.Length() * 100.f, FColor::Cyan);
-	DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
-	UE_LOG(LogTemp, Warning, TEXT("Vector: %s"), *TargetPosition.ToString());
+	if (Agent.GetDebugRenderingEnabled())
+	{
+		FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f};
+		FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f};
+		FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f};
+		FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f};
+		FVector2D Forward2D(Agent.GetActorForwardVector().X,Agent.GetActorForwardVector().Y);
+		Forward2D.Normalize();
+		float Angle = FMath::Atan2(Forward2D ^ steeringOutput.LinearVelocity, FVector2D::DotProduct(Forward2D, steeringOutput.LinearVelocity));
+		FVector AngularDebug = Agent.GetActorRightVector() * Angle;
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart+AgentVelocityEnd * 0.5f,  FColor::Green);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart+ AgentForwardEnd * 100.f,  FColor::Magenta);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * steeringOutput.LinearVelocity.Length() * 100.f, FColor::Cyan);
+		DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+	}
+	
 	
 	return steeringOutput;
 
@@ -48,24 +46,26 @@ SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	steeringOutput.LinearVelocity.Normalize();
 
 	//Debug Render 
-	FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
-	FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
-	FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f };
-	FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f };
-	FVector2D Forward2D(
-		Agent.GetActorForwardVector().X,
-		Agent.GetActorForwardVector().Y
-	);
-	Forward2D.Normalize();
+	if (Agent.GetDebugRenderingEnabled())
+	{
+		FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
+		FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
+		FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f };
+		FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f };
+		FVector2D Forward2D(
+			Agent.GetActorForwardVector().X,
+			Agent.GetActorForwardVector().Y
+		);
+		Forward2D.Normalize();
 
-	float Angle = FMath::Atan2(Forward2D ^ steeringOutput.LinearVelocity, FVector2D::DotProduct(Forward2D, steeringOutput.LinearVelocity));
-	FVector AngularDebug = Agent.GetActorRightVector() * Angle;
+		float Angle = FMath::Atan2(Forward2D ^ steeringOutput.LinearVelocity, FVector2D::DotProduct(Forward2D, steeringOutput.LinearVelocity));
+		FVector AngularDebug = Agent.GetActorRightVector() * Angle;
 
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentVelocityEnd * 0.5f, FColor::Green);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * steeringOutput.LinearVelocity.Length() * 100.f, FColor::Cyan);
-	DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
-
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentVelocityEnd * 0.5f, FColor::Green);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * steeringOutput.LinearVelocity.Length() * 100.f, FColor::Cyan);
+		DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+	}
 	
 
 	return steeringOutput;
@@ -103,23 +103,25 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	}
 	
 	//Debug
-	FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
-	FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
-	FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f };
-	FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f };
-	FVector2D Forward2D(Agent.GetActorForwardVector().X,Agent.GetActorForwardVector().Y);
-	Forward2D.Normalize();
+	if (Agent.GetDebugRenderingEnabled())
+	{
+		FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
+		FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
+		FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f };
+		FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f };
+		FVector2D Forward2D(Agent.GetActorForwardVector().X,Agent.GetActorForwardVector().Y);
+		Forward2D.Normalize();
 
-	float Angle =FMath::Atan2(Forward2D ^ steeringOutput.LinearVelocity,FVector2D::DotProduct(Forward2D, steeringOutput.LinearVelocity));
+		float Angle =FMath::Atan2(Forward2D ^ steeringOutput.LinearVelocity,FVector2D::DotProduct(Forward2D, steeringOutput.LinearVelocity));
 
-	FVector AngularDebug =Agent.GetActorRightVector() * Angle;
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentVelocityEnd * 0.5f, FColor::Green);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * steeringOutput.LinearVelocity.Length() * 100.f, FColor::Cyan);
-	DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false,-1.f,0,5.f,FVector(1, 0, 0),  FVector(0, 1, 0),  false);
-	DrawDebugCircle(Agent.GetWorld(), lineStart, 1000.f, 32, FColor::Blue, false,-1.f,0,1.f,FVector(1, 0, 0),  FVector(0, 1, 0),  false);
-	DrawDebugCircle(Agent.GetWorld(), lineStart, TargetRadius, 32, FColor::Red, false, -1.f, 0, 1.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
-
+		FVector AngularDebug =Agent.GetActorRightVector() * Angle;
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentVelocityEnd * 0.5f, FColor::Green);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * steeringOutput.LinearVelocity.Length() * 100.f, FColor::Cyan);
+		DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false,-1.f,0,5.f,FVector(1, 0, 0),  FVector(0, 1, 0),  false);
+		DrawDebugCircle(Agent.GetWorld(), lineStart, 1000.f, 32, FColor::Blue, false,-1.f,0,1.f,FVector(1, 0, 0),  FVector(0, 1, 0),  false);
+		DrawDebugCircle(Agent.GetWorld(), lineStart, TargetRadius, 32, FColor::Red, false, -1.f, 0, 1.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+	}
 	return steeringOutput;
 
 
@@ -142,19 +144,21 @@ SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 
 
 	//Debug Render 
-	FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
-	FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
-	FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f };
-	FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f };
-	FVector2D Forward2D(Agent.GetActorForwardVector().X,Agent.GetActorForwardVector().Y);
-	Forward2D.Normalize();
+	if (Agent.GetDebugRenderingEnabled())
+	{
+		FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
+		FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
+		FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f };
+		FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f };
+		FVector2D Forward2D(Agent.GetActorForwardVector().X,Agent.GetActorForwardVector().Y);
+		Forward2D.Normalize();
 
-	FVector AngularDebug =Agent.GetActorRightVector() * Output.AngularVelocity;
+		FVector AngularDebug =Agent.GetActorRightVector() * Output.AngularVelocity;
 
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * 0.2f, FColor::Cyan);
-	DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false,-1.f,0,5.f,FVector(1, 0, 0), FVector(0, 1, 0), false);
-
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * 0.2f, FColor::Cyan);
+		DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false,-1.f,0,5.f,FVector(1, 0, 0), FVector(0, 1, 0), false);
+	}
 	return Output;
 
 
@@ -185,22 +189,24 @@ SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	SteeringOutput.LinearVelocity.Normalize();
 
 	//Debug Render 
-	FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
-	FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
-	FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f };
-	FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f };
-	FVector2D Forward2D(Agent.GetActorForwardVector().X,Agent.GetActorForwardVector().Y);
-	Forward2D.Normalize();
+	if (Agent.GetDebugRenderingEnabled())
+	{
+		FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
+		FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
+		FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f };
+		FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f };
+		FVector2D Forward2D(Agent.GetActorForwardVector().X,Agent.GetActorForwardVector().Y);
+		Forward2D.Normalize();
 
-	float Angle =FMath::Atan2(Forward2D ^ SteeringOutput.LinearVelocity,FVector2D::DotProduct(Forward2D, SteeringOutput.LinearVelocity));
+		float Angle =FMath::Atan2(Forward2D ^ SteeringOutput.LinearVelocity,FVector2D::DotProduct(Forward2D, SteeringOutput.LinearVelocity));
 
-	FVector AngularDebug =Agent.GetActorRightVector() * Angle;
+		FVector AngularDebug =Agent.GetActorRightVector() * Angle;
 
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentVelocityEnd * 0.5f, FColor::Green);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * SteeringOutput.LinearVelocity.Length() * 100.f, FColor::Cyan);
-	DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false,-1.f,0,5.f,FVector(1, 0, 0), FVector(0, 1, 0), false);
-
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentVelocityEnd * 0.5f, FColor::Green);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * SteeringOutput.LinearVelocity.Length() * 100.f, FColor::Cyan);
+		DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false,-1.f,0,5.f,FVector(1, 0, 0), FVector(0, 1, 0), false);
+	}
 	return SteeringOutput;
 
 
@@ -235,28 +241,29 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	else SteeringOutput.IsValid = false;
 	
 	//Debug Render 
-	FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
-	FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
-	FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f };
-	FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f };
-	FVector2D Forward2D(
-		Agent.GetActorForwardVector().X,
-		Agent.GetActorForwardVector().Y
-	);
-	Forward2D.Normalize();
+	if (Agent.GetDebugRenderingEnabled())
+	{
+		FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
+		FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
+		FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f };
+		FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f };
+		FVector2D Forward2D(
+			Agent.GetActorForwardVector().X,
+			Agent.GetActorForwardVector().Y
+		);
+		Forward2D.Normalize();
 
-	float Angle = FMath::Atan2(Forward2D ^ SteeringOutput.LinearVelocity, FVector2D::DotProduct(Forward2D, SteeringOutput.LinearVelocity));
+		float Angle = FMath::Atan2(Forward2D ^ SteeringOutput.LinearVelocity, FVector2D::DotProduct(Forward2D, SteeringOutput.LinearVelocity));
 
-	FVector AngularDebug = Agent.GetActorRightVector() * Angle;
+		FVector AngularDebug = Agent.GetActorRightVector() * Angle;
 
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentVelocityEnd * 0.5f, FColor::Green);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * SteeringOutput.LinearVelocity.Length() * 100.f, FColor::Cyan);
-	DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
-	DrawDebugCircle(Agent.GetWorld(), FVector(PredictedPosition.X, PredictedPosition.Y, 0.f), 10.f, 32, FColor::Magenta, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
-	DrawDebugCircle(Agent.GetWorld(), lineStart, evadeRadius, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
-
-
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentVelocityEnd * 0.5f, FColor::Green);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * SteeringOutput.LinearVelocity.Length() * 100.f, FColor::Cyan);
+		DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+		DrawDebugCircle(Agent.GetWorld(), FVector(PredictedPosition.X, PredictedPosition.Y, 0.f), 10.f, 32, FColor::Magenta, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+		DrawDebugCircle(Agent.GetWorld(), lineStart, evadeRadius, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+	}
 	SteeringOutput.LinearVelocity.Normalize();
 	return SteeringOutput;
 
@@ -269,8 +276,7 @@ SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	SteeringOutput SteeringOutput;
 	Agent.SetMaxLinearSpeed(300.);
 	const float MaxSpeed = 500.f;
-	const float CircleDistance = 150.f;
-	const float CircleRadius = 75.f;
+	
 
 	FVector2D AgentPos = FVector2D(Agent.GetActorLocation());
 	FVector2D Forward2D(
@@ -283,34 +289,39 @@ SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 		Forward2D = FVector2D(1.f, 0.f);
 	}
 
-	FVector2D CircleCenter = AgentPos + Forward2D * CircleDistance;
-	float RandomAngle = FMath::FRandRange(0.f, 2.f * PI);
+	FVector2D CircleCenter = AgentPos + Forward2D * m_OffsetDistance;
+	m_WanderAngle += FMath::FRandRange(-m_MaxAngleChange, m_MaxAngleChange );
 	FVector2D Displacement(
-		FMath::Cos(RandomAngle),
-		FMath::Sin(RandomAngle)
+		FMath::Cos(m_WanderAngle),
+		FMath::Sin(m_WanderAngle)
 	);
-	Displacement *= CircleRadius;
+	
+	
+	
+	Displacement *= m_Radius;
 	FVector2D WanderTarget = CircleCenter + Displacement;
 	FVector2D DesiredVelocity =
 		(WanderTarget - AgentPos).GetSafeNormal() * MaxSpeed;
 	SteeringOutput.LinearVelocity = DesiredVelocity;
 
 	//Debug Render
-	FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
-	FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
-	FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f };
-	FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f };
-	Forward2D.Normalize();
+	if (Agent.GetDebugRenderingEnabled())
+	{
+		FVector lineStart{ Agent.GetPosition().X , Agent.GetPosition().Y, 0.f };
+		FVector TargetPosition{ Target.Position.X , Target.Position.Y, 0.f };
+		FVector AgentVelocityEnd{ Agent.GetVelocity().X  , Agent.GetVelocity().Y   , 0.f };
+		FVector AgentForwardEnd{ Agent.GetActorForwardVector().X  , Agent.GetActorForwardVector().Y  , 0.f };
+		Forward2D.Normalize();
 
-	float Angle = FMath::Atan2(Forward2D ^ SteeringOutput.LinearVelocity, FVector2D::DotProduct(Forward2D, SteeringOutput.LinearVelocity));
-	FVector AngularDebug = Agent.GetActorRightVector() * Angle;
+		float Angle = FMath::Atan2(Forward2D ^ SteeringOutput.LinearVelocity, FVector2D::DotProduct(Forward2D, SteeringOutput.LinearVelocity));
+		FVector AngularDebug = Agent.GetActorRightVector() * Angle;
 
-	DrawDebugLine(Agent.GetWorld(), lineStart, FVector(WanderTarget.X, WanderTarget.Y, 0.f), FColor::Green);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
-	DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * 300.f, FColor::Cyan);
-	DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
-	DrawDebugCircle(Agent.GetWorld(), FVector(CircleCenter.X, CircleCenter.Y,0), CircleRadius, 32, FColor::Blue, false,-1.f,0,1.f,FVector(1, 0, 0),FVector(0, 1, 0),false);
-
+		DrawDebugLine(Agent.GetWorld(), lineStart, FVector(WanderTarget.X, WanderTarget.Y, 0.f), FColor::Green);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AgentForwardEnd * 100.f, FColor::Magenta);
+		DrawDebugLine(Agent.GetWorld(), lineStart, lineStart + AngularDebug * 300.f, FColor::Cyan);
+		DrawDebugCircle(Agent.GetWorld(), TargetPosition, 10.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+		DrawDebugCircle(Agent.GetWorld(), FVector(CircleCenter.X, CircleCenter.Y,0), m_Radius, 32, FColor::Blue, false,-1.f,0,1.f,FVector(1, 0, 0),FVector(0, 1, 0),false);
+	}
 	SteeringOutput.LinearVelocity.Normalize();
 	return SteeringOutput;
 
