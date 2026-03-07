@@ -52,11 +52,16 @@ public:
 	virtual ~Arrive() override = default;
 
 
-	float TargetRadius = 200.f;
+	float m_TargetRadius = 200.f;
+	float m_SlowRadius{ 1000.f };
 
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
 	void SetTargetRadius(float radius) {
-TargetRadius = radius;
+m_TargetRadius = radius;
+	}
+	
+	void SetSlowRadius(float radius) {
+		m_SlowRadius = radius;
 	}
 };
 
@@ -66,7 +71,13 @@ public:
 	Face() = default;
 	virtual ~Face() override = default;
 
+	float m_MaxTurnSpeed {360.f};
+	
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+	void SetMaxTurnSpeed(float speed) {
+		m_MaxTurnSpeed = speed;
+	}
+	
 };
 
 class Pursuit : public ISteeringBehavior
@@ -85,6 +96,11 @@ public:
 	virtual ~Evade() override = default;
 
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+	
+	void SetEvadeRadius(float radius) {m_EvadeRadius = radius;};
+	
+protected:
+	float m_EvadeRadius = 200.f;
 };
 
 class Wander : public Seek
@@ -94,6 +110,18 @@ public:
 	virtual ~Wander() override = default;
 
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent& Agent) override;
+	
+	void SetOffsetDistance(float speed) {
+		m_OffsetDistance = speed;
+	}
+	void SetRadius(float speed) {
+		m_Radius = speed;
+	}
+	void SetMaxAngleChange(float speed) {
+		m_MaxAngleChange = FMath::DegreesToRadians(speed);
+	}
+
+	
 protected:
 	float m_OffsetDistance = 150.f;
 	float m_Radius = 75.f;
