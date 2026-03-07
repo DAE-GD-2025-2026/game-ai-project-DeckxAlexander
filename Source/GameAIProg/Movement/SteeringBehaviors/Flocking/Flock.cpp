@@ -39,7 +39,7 @@ Flock::Flock(
 		FTargetData Target{pAgentToEvade->GetPosition(),pAgentToEvade->GetRotation(),pAgentToEvade->GetLinearVelocity(), pAgentToEvade->GetAngularVelocity() };
 		pEvadeBehavior->SetTarget(Target);
 		pPrioritySteering = std::make_unique<PrioritySteering>(std::vector<ISteeringBehavior*>{pEvadeBehavior.get(), pBlendedSteeringBehavior.get()});
-		
+		pAgentToEvade->SetSteeringBehavior(pSeekBehavior.get());
 	}
 	else
 	{
@@ -73,6 +73,7 @@ Flock::Flock(
 
 Flock::~Flock()
 {
+
 }
 
 void Flock::Tick(float DeltaTime)
@@ -84,6 +85,7 @@ void Flock::Tick(float DeltaTime)
 			RegisterNeighbors(Agent);
 			Agent->SetSteeringBehavior(pPrioritySteering.get());
 			Agent->Tick(DeltaTime);
+			if (Agent->GetDebugRenderingEnabled()) RenderNeighborhood(Agent);
 		}
 #else
 		for (int i = 0; i < Agents.Num(); ++i)
@@ -94,6 +96,7 @@ void Flock::Tick(float DeltaTime)
 			pPartitionedSpace->RegisterNeighbors(Agents[i], NeighborhoodRadius);
 			Agents[i]->SetSteeringBehavior(pPrioritySteering.get());
 			Agents[i]->Tick(DeltaTime);
+			if (Agents[i]->GetDebugRenderingEnabled()) RenderNeighborhood(Agent);
 
 		}
 #endif
@@ -107,11 +110,9 @@ void Flock::Tick(float DeltaTime)
 
 void Flock::RenderDebug()
 {
-	RenderNeighborhood();
 	//Highlight Evade Target
 	if (pAgentToEvade != nullptr)
 	{
-
 		DrawDebugCircle(pAgentToEvade->GetWorld(), pAgentToEvade->GetActorLocation(), 30.f, 32, 
 			FColor::Yellow, false, -1.f, 0, 5.f, FVector(1, 0, 0), 
 			FVector(0, 1, 0), false);
@@ -192,12 +193,24 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 #endif
 }
 
-void Flock::RenderNeighborhood()
+void Flock::RenderNeighborhood(ASteeringAgent* agent)
 {
-	if (Agents.Num() == 0)
-		return;
-	ASteeringAgent* First = Agents[0];
-	DrawDebugCircle(First->GetWorld(), First->GetActorLocation(), 200.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+	DrawDebugCircle(agent->GetWorld(), agent->GetActorLocation(), 200.f, 32, FColor::Red, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+#ifndef GAMEAI_USE_SPACE_PARTITIONING
+	for (int i = 0; i < GetNrOfNeighbors(); ++i)
+	{
+		DrawDebugCircle(Neighbors[i]->GetWorld(), Neighbors[i]->GetActorLocation(), 
+				25.f, 32, FColor::Blue, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+	}
+#else
+	for (int i = 0; i < pPartitionedSpace->GetNrOfNeighbors(); ++i)
+	{
+		DrawDebugCircle(pPartitionedSpace->GetNeighbors()[i]->GetWorld(), pPartitionedSpace->GetNeighbors()[i]->GetActorLocation(), 
+			25.f, 32, FColor::Blue, false, -1.f, 0, 5.f, FVector(1, 0, 0), FVector(0, 1, 0), false);
+	}
+#endif
+	
+	
 }
 
 #ifndef GAMEAI_USE_SPACE_PARTITIONING
@@ -230,7 +243,6 @@ FVector2D Flock::GetAverageNeighborPos() const
 {
 	FVector2D avgPosition = FVector2D::ZeroVector;
 #ifndef GAMEAI_USE_SPACE_PARTITIONING
-	
 	if (NrOfNeighbors == 0) return avgPosition;
 	
 		for (int i = 0; i < NrOfNeighbors; ++i)
@@ -271,7 +283,7 @@ FVector2D Flock::GetAverageNeighborVelocity() const
 
 void Flock::SetTarget_Seek(FSteeringParams const& Target)
 {
-	pBlendedSteeringBehavior->SetTarget(Target);
+	pSeekBehavior->SetTarget(Target);
 	
 }
 
