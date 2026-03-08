@@ -1,10 +1,9 @@
 # Game AI Project
 
-##Overview
 
 This project was created for the Algorithms 2 course at Digital Arts & Entertainment. It explores the fundamentals of AI movement behaviour and the techniques commonly used in games to simulate autonomous agents.
 
-##Features
+## Features
 
 The current features of the project include:
 ### Steering Behaviours
@@ -21,12 +20,12 @@ The current features of the project include:
 ### Space Partitioning
 Grid-based spatial partitioning for efficient neighbor searching.
 
-##Tech
+## Tech
 
 - Unreal Engine
 - Unreal C++
 
-##How to run
+## How to run
 
 1. Clone or download this repository.
 2. Open the project folder.
