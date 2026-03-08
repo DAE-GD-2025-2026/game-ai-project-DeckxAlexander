@@ -83,7 +83,6 @@ void CellSpace::UpdateAgentCell(ASteeringAgent* Agent, const FVector2D& OldPos)
 
 void CellSpace::RegisterNeighbors(ASteeringAgent* Agent, float QueryRadius)
 {
-	// TODO Only check the cells that are within the radius of the neighborhood
 	NrOfNeighbors = 0;
 	const FVector2D pos = Agent->GetPosition();
 	const float radiusSq = QueryRadius * QueryRadius;
@@ -128,7 +127,6 @@ void CellSpace::EmptyCells()
 
 void CellSpace::RenderCells() const
 {
-	// TODO Render the cells with the number of agents inside of it
 	if (!pWorld) return;
 
 	for (const Cell& cell : Cells)
