@@ -96,7 +96,7 @@ namespace GameAI
 		std::stack<int> nodeStack;
 		Node* pCurrentNode = Nodes[startIndex];
 		std::vector<Connection*> Neighbors = graphCopy.FindConnectionsFrom(pCurrentNode->GetId());
-		while (Neighbors.size() > 0 && nodeStack.size() > 0)
+		while (Neighbors.size() > 0 || nodeStack.size() > 0)
 		{
 			if (Neighbors.size() > 0 )
 			{
@@ -104,10 +104,17 @@ namespace GameAI
 				pCurrentNode = Nodes[Neighbors[0]->GetToId()];
 				graphCopy.RemoveConnection(Neighbors[0]);
 			}
-			//Else....
-			
-			//UNWIND STACK HERE!!!
-			
+			else
+			{
+				Path.push_back(m_pGraph->GetNode(pCurrentNode->GetId()).get());
+
+				if (!nodeStack.empty())
+				{
+					int nodeId = nodeStack.top();
+					nodeStack.pop();
+					pCurrentNode = Nodes[nodeId];
+				}
+			}
 			
 			Neighbors = graphCopy.FindConnectionsFrom(pCurrentNode->GetId());
 			
