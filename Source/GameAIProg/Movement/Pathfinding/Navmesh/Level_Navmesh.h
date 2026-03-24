@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GraphTheory/Level_GraphTheory.h"
 #include "Shared/Graph/NavGraph/NavGraph.h"
+#include "GraphTheory/Algorithms/NavGraphPathfinding.h"
 #include "Level_Navmesh.generated.h"
+
 
 UCLASS()
 class GAMEAIPROG_API ALevel_Navmesh : public ALevel_Base
@@ -36,6 +38,8 @@ private:
 	ASteeringAgent* Agent{nullptr}; // ref
 	PathFollow PathFollow{};
 	std::vector<FVector2D> DebugDrawPath{};
+	std::vector<GameAI::NavLine> DebugDrawPortals{};
+
 	
 	bool bDrawNavPolyVertices{false};
 	bool bDrawNavPoly{true};
