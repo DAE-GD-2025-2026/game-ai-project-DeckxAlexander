@@ -20,6 +20,11 @@ The current features of the project include:
 ### Space Partitioning
 Grid-based spatial partitioning for efficient neighbor searching.
 
+### Pathfinding
+- A* pathfinding
+- NavGraph
+- SSFA
+
 ## Tech
 
 - Unreal Engine
