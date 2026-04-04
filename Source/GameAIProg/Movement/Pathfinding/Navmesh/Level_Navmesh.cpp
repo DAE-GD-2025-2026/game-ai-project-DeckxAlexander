@@ -75,7 +75,7 @@ void ALevel_Navmesh::Tick(float DeltaTime)
 	{
 		for (const FVector& Vertex : NavigationGraph->GetNavPolygon()->GetVertices())
 		{
-			DrawDebugPoint(GetWorld(), Vertex, 10.0f, FColor::Cyan);
+			DrawDebugSphere(GetWorld(), Vertex, 30.0f,8, FColor::Cyan, false,-1,1,5);
 		}
 	}
 	
@@ -95,8 +95,6 @@ void ALevel_Navmesh::Tick(float DeltaTime)
 				FColor::Magenta, false, -1, 1, 10);
 		}
 	}
-	
-	// Todo: Draw the portals travelled through with SSFA
 	if (bDrawPortals)
 	{
 		for (auto portal : DebugDrawPortals)

@@ -99,14 +99,12 @@ void ALevel_PathfindingAStar::Tick(float DeltaTime)
 
 void ALevel_PathfindingAStar::CalculatePath()
 {
-	// Find a path
-	//Check if valid start and end node exist
+
 	if (PathStartNodeId != Graphs::InvalidNodeId
 		&& PathEndNodeId != Graphs::InvalidNodeId
 		&& PathStartNodeId != PathEndNodeId)
 	{
-		//Select (uncomment) BFS Pathfinding or A* Pathfinding
-		//BFS pathfinder = BFS(TerrainGraph);
+
 		AStar pathfinder = AStar(TerrainGraph, HeuristicFunction);
 		TerrainNode* const startNode = TerrainGraph->GetNodeAs<TerrainNode>(PathStartNodeId);
 		TerrainNode* const endNode = TerrainGraph->GetNodeAs<TerrainNode>(PathEndNodeId);
@@ -123,7 +121,7 @@ void ALevel_PathfindingAStar::CalculatePath()
 		FoundPath.clear();
 	}
 	
-	// Update the highlighted nodes in the renderer
+
 	std::vector<std::pair<int, FColor>> PathToHighlight{};
 	PathToHighlight.push_back({PathStartNodeId, FColor::Green});
 	if (!FoundPath.empty())

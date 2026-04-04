@@ -17,7 +17,6 @@ public:
 	//https://gamedev.stackexchange.com/questions/68302/how-does-the-simple-stupid-funnel-algorithm-work
 	static std::vector<NavLine> FindPortals(std::vector<Node*> const & Path, TriPolygon const & NavPoly)
 	{
-		//Container
 		std::vector<NavLine> Portals = {};
 		Portals.emplace_back(NavLine{Path.front()->GetPosition(), Path.front()->GetPosition()});
 		
@@ -35,19 +34,25 @@ public:
 			FVector2D p1{FVector2D(edge.GetP1(NavPoly))};
 			FVector2D p2{FVector2D(edge.GetP2(NavPoly))};
 			
-			FVector2D pathDir = (nextNode->GetPosition() - currentNode->GetPosition());
-			FVector2D edgeDir = p2 - p1;
 			
-			float cross = FVector2D::CrossProduct(pathDir, edgeDir);
-			if (cross > 0)
+			
+			FVector2D pathDir = (nextNode->GetPosition() - currentNode->GetPosition()).GetSafeNormal();
+			FVector2D center = currentNavNode->GetPosition();
+			FVector2D toP1 = p1-center;
+			FVector2D toP2 = p2-center;
+			float cross1 = FVector2D::CrossProduct(pathDir, toP1);
+			float cross2 = FVector2D::CrossProduct(pathDir, toP2);
+			
+
+			if (cross1 < cross2)
 			{
-				portal.P1 = p1; // right
-				portal.P2 = p2; // left
+				portal.P1 = p1; 
+				portal.P2 = p2; 
 			}
 			else
 			{
-				portal.P1 = p2; // right
-				portal.P2 = p1; // left
+				portal.P1 = p2; 
+				portal.P2 = p1; 
 			}
 			Portals.emplace_back(portal);
 		}
@@ -56,13 +61,6 @@ public:
 		Portals.emplace_back(NavLine{Path.back()->GetPosition(),Path.back()->GetPosition()});
 		
 		return Portals;
-		//For each node received, get it's corresponding line
-		
-			//Redetermine it's "orientation" based on the required path (left-right vs right-left) - p1 should be right point
-
-			//Store portal
-
-		//Add degenerate portal to force end evaluation
 
 
 	}
@@ -72,6 +70,8 @@ public:
 	static std::vector<FVector2D> OptimizePortals( std::vector<NavLine> const & Portals, TriPolygon const & NavPoly)
 	{
 		std::vector<FVector2D> Path{};
+		
+
 		
 		FVector2D apex = Portals[0].P1;
 		Path.push_back(apex);
@@ -83,6 +83,9 @@ public:
 		int leftLegIndex = 0;
 		int rightLegIndex = 0;
 		
+		
+		
+		
 		for (int portalIndex = 1; portalIndex < Portals.size(); ++portalIndex)
 		{
 			const NavLine& portal = Portals[portalIndex];
@@ -92,7 +95,7 @@ public:
 			{
 				if (FVector2D::CrossProduct(newRightLeg, leftLeg) < 0)
 				{
-					apex = apex + leftLeg;
+					apex = Portals[leftLegIndex].P2;
 					Path.push_back(apex);
 
 					apexIndex = leftLegIndex;
@@ -124,7 +127,8 @@ public:
 
             if (FVector2D::CrossProduct(newLeftLeg, rightLeg) > 0)
             {
-                apex = apex + rightLeg;
+
+            	apex = Portals[rightLegIndex].P1;
                 Path.push_back(apex);
 
                 apexIndex = rightLegIndex;

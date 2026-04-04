@@ -57,36 +57,26 @@ void GameAI::NavGraph::CreateNavigationGraph()
 			if (tri.HasEdge(edge))
 				count++;
 		}
-		
 		FVector p1 = edge.GetP1(*pNavPoly);
 		FVector p2 = edge.GetP2(*pNavPoly);
-
 		FVector middle = (p1 + p2) * 0.5f;
 
 		int nodeId = AddNode(std::make_unique<NavGraphNode>(FVector2D(middle), index));
-		
-		
-		
 	}
 	
 	for (const auto& tri : pNavPoly.get()->GetTriangles())
 	{
 		std::vector<int> nodeIds;
-
-		// Get triangle edges
+		
 		auto triEdges = tri.GetEdges();
 
 		for (const auto& edge : triEdges)
 		{
-			// Convert edge → edgeIdx
 			auto edgeIdxOpt = pNavPoly->FindEdgeIndex(edge);
-
 			if (!edgeIdxOpt.has_value())
 				continue;
 
 			int edgeIdx = edgeIdxOpt.value();
-
-			// Get node from edgeIdx
 			int nodeId = GetNodeIdFromEdgeIndex(edgeIdx);
 
 			if (nodeId != Graphs::InvalidNodeId)
@@ -108,8 +98,7 @@ void GameAI::NavGraph::CreateNavigationGraph()
 			AddConnection(a, b);
 			FindConnection(a, b)->SetWeight(cost);
 		}
-
-		// If 3 nodes → fully connect
+		
 		else if (nodeIds.size() == 3)
 		{
 			for (int i = 0; i < 3; ++i)
@@ -123,22 +112,10 @@ void GameAI::NavGraph::CreateNavigationGraph()
 						FVector(Nodes[a]->GetPosition(),0),
 						FVector(Nodes[b]->GetPosition(),0)
 					);
-
-					
 					AddConnection(a, b);
 					FindConnection(a, b)->SetWeight(cost);
 				}
 			}
 		}
 	}
-	
-	
-	//1. Go over all the edges of the navigation mesh and create nodes
-			// Create node here
-
-	//2. Create connections now that every node is created	
-		//2 valid nodes -> 1 connection
-		//3 valid nodes -> 3 connections
-		
-	//3. Set the connections cost to the actual distance
 }
