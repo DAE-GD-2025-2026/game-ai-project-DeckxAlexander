@@ -25,10 +25,21 @@ Grid-based spatial partitioning for efficient neighbor searching.
 - NavGraph
 - SSFA
 
+---
+
+## Extra Assignment
+For the extra assignment I added a **fallback path** to the A* pathfinding algorithm. 
+
+Now, if the goal cannot be reached, the algorithm returns a path to the node closest to the target instead of failing.
+
+---
+
 ## Tech
 
 - Unreal Engine
 - Unreal C++
+
+---
 
 ## How to run
 
