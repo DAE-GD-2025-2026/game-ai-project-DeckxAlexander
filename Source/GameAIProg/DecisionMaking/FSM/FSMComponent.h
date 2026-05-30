@@ -7,7 +7,9 @@
 
 #include "CoreMinimal.h"
 #include "BrainComponent.h"
+#include "Movement/SteeringBehaviors/Steering/SteeringBehaviors.h"
 #include "FSMComponent.generated.h"
+
 class ASteeringAgent;
 namespace GameAI::FSM
 {
@@ -15,30 +17,52 @@ namespace GameAI::FSM
 	{
 	public:
 		State() = default;
-		virtual void ExecuteBehaviour(ASteeringAgent* agent) = 0;
+		virtual ~State() = default;
+		virtual void ExecuteBehaviour(ASteeringAgent* agent, ASteeringAgent* targetAgent = nullptr) = 0;
 	};
 	
 	class TestState : public State
 	{
 	public:
-		virtual void ExecuteBehaviour(ASteeringAgent* agent);
+		virtual ~TestState() = default;
+		virtual void ExecuteBehaviour(ASteeringAgent* agent, ASteeringAgent* targetAgent = nullptr) override;
+	};
+	
+	
+	class ChaseState : public State
+	{
+	public:
+		ChaseState() : State()
+		{
+			m_pPursuit = std::make_unique<Pursuit>();
+		}
+		virtual ~ChaseState() = default;
+		virtual void ExecuteBehaviour(ASteeringAgent* agent, ASteeringAgent* targetAgent = nullptr) override;
+
+	private:
+		std::unique_ptr<Pursuit> m_pPursuit{};
 	};
 	
 	class Transition
 	{
 	public:
-		Transition(State* From, State* To, std::function<bool()> EvalFunc){}
-		State* CheckTransition()
+		Transition(State* From, State* To, std::function<bool(UBlackboardComponent* bb)> EvalFunc) : m_FromState(From), m_ToState(To), m_TransitionFunction(EvalFunc){}
+		
+		State* CheckTransition(UBlackboardComponent* bb)
 		{
-			if (m_TransitionFunction) return m_ToState;
+			
+			if (m_TransitionFunction(bb)) return m_ToState;
 			return m_FromState;
 		}
 		
-		State* GetFrom() { return m_FromState; }
+		State* GetFrom()
+		{
+			return m_FromState;
+		}
 	private:
 		State* m_FromState;
 		State* m_ToState;
-		std::function<bool()> m_TransitionFunction;
+		std::function<bool(UBlackboardComponent* bb)> m_TransitionFunction;
 	};
 	
 
@@ -62,9 +86,10 @@ public:
 	
 	virtual bool IsRunning() const override; 
 	
-	void AddState(std::unique_ptr<GameAI::FSM::State>&& NewState);
-	void AddTransition(GameAI::FSM::State* From, GameAI::FSM::State* To, std::function<bool()> EvalFunc);
-		
+	GameAI::FSM::State* AddState(std::unique_ptr<GameAI::FSM::State>&& NewState);
+	void AddTransition(GameAI::FSM::State* From, GameAI::FSM::State* To, std::function<bool(UBlackboardComponent* bb)> EvalFunc);
+	
+	const std::vector<std::unique_ptr<GameAI::FSM::State>>& GetStates() const {return m_States;}
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

@@ -26,7 +26,7 @@ void ALevel_FSM::BeginPlay()
 	
 	
 	auto ThiefAgent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, 
-		FVector{10,0,90}, FRotator::ZeroRotator);
+		FVector{700,0,90}, FRotator::ZeroRotator);
 	
 
 	
@@ -36,15 +36,19 @@ void ALevel_FSM::BeginPlay()
 		if (UFSMComponent* FSM = Cast<UFSMComponent>(AIController->GetBrainComponent()))
 		{
 			auto bb = AIController->GetBlackboardComponent();
-			auto TestState = std::make_unique<GameAI::FSM::TestState>();
-			auto TestState2 = std::make_unique<GameAI::FSM::TestState>();
-			FSM->AddTransition(TestState.get(), TestState2.get(), 
-			[bb]() {
-				return bb->GetValueAsBool(FName("TargetVisible"));
+			auto TestState = FSM->AddState(std::make_unique<GameAI::FSM::TestState>());
+			auto TestState2 = FSM->AddState(std::make_unique<GameAI::FSM::ChaseState>());
+			auto lambda = [](UBlackboardComponent* blackboard) 
+			{
+				return blackboard->GetValueAsBool(FName("TargetVisible"));
+			};
+			
+			FSM->AddTransition(FSM->GetStates()[0].get(), FSM->GetStates()[1].get(), lambda);
+			FSM->AddTransition(FSM->GetStates()[1].get(), FSM->GetStates()[0].get(), 
+			[](UBlackboardComponent* blackboard) {
+				return !blackboard->GetValueAsBool(FName("TargetVisible"));
 			});
-			FSM->AddState(std::move(TestState));
-			FSM->AddState(std::move(TestState2));
-
+			
 
 			bb->SetValueAsObject(FName("SteeringAgent"),Agent );
 			bb->SetValueAsObject(FName("ThiefAgent"),ThiefAgent );

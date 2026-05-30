@@ -131,6 +131,7 @@ void ALevel_PathfindingAStar::CalculatePath()
 			PathToHighlight.push_back({FoundPath[Idx]->GetId(), FColor::Yellow});
 		}
 	}
+	PathToHighlight.push_back({FoundPath.back()->GetId(), FColor::Red});
 	PathToHighlight.push_back({PathEndNodeId, FColor::Red});
 	Renderer->SetHighlightedNodes(PathToHighlight);
 }

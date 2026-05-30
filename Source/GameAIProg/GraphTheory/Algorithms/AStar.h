@@ -34,6 +34,8 @@ namespace GameAI
 		};
 
 		std::vector<Node*> FindPath(Node* const pStartNode, Node* const pDestinationNode);
+		
+		std::vector<Node*> ReconstructPath(NodeRecord currentNodeRecord,const std::vector<NodeRecord>& closedList,Node* const pStartNode, const std::vector<Node*>& nodes);
 
 	private:
 		float GetHeuristicCost(Node* const pStartNode, Node* const pEndNode) const;

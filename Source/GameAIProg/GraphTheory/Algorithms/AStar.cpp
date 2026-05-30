@@ -15,8 +15,11 @@ std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode)
 	std::vector<NodeRecord> openList;
 	std::vector<NodeRecord> closedList;
 	NodeRecord currentNodeRecord{};
-	NodeRecord startRecord{pStartNode, nullptr, 
-		0.f,GetHeuristicCost(pStartNode, pGoalNode)};
+	NodeRecord startRecord{pStartNode, nullptr, 0.f,GetHeuristicCost(pStartNode, pGoalNode)};
+	
+	//For Fallback path
+	NodeRecord closestRecord = startRecord;
+	float closestHeuristic = GetHeuristicCost(pStartNode, pGoalNode);
 	
 	auto nodes = pGraph->GetActiveNodes();
 	
@@ -26,32 +29,19 @@ std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode)
 	{
 		auto RecordIt = std::min_element(openList.begin(), openList.end());
 		currentNodeRecord = *RecordIt;
+		
+		//For Fallback Path
+		float currentHeuristic = GetHeuristicCost(currentNodeRecord.pNode, pGoalNode);
+		if (currentHeuristic < closestHeuristic)
+		{
+			closestHeuristic = currentHeuristic;
+			closestRecord = currentNodeRecord;
+		}
+		
+		
 		if (currentNodeRecord.pNode == pGoalNode)
 		{
-			while (currentNodeRecord.pNode != pStartNode)
-			{
-				path.push_back(currentNodeRecord.pNode);
-				if (currentNodeRecord.pConnection == nullptr)
-					break;
-				Node* pFromNode = nodes[currentNodeRecord.pConnection->GetFromId()];
-
-				auto it = std::find_if(
-					closedList.begin(),
-					closedList.end(),
-					[pFromNode](const NodeRecord& record)
-					{
-						return record.pNode == pFromNode;
-					});
-
-				if (it == closedList.end())
-					break;
-
-				currentNodeRecord = *it;
-			}
-			
-			path.push_back(pStartNode);
-			std::reverse(path.begin(), path.end());
-			
+			path = ReconstructPath(currentNodeRecord,closedList,pStartNode,nodes);
 			return path;
 		}
 		
@@ -99,6 +89,49 @@ std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode)
 		
 	}
 	
+	//Fallback path
+	if (closestRecord.pNode != pStartNode)
+	{
+		path =  ReconstructPath(
+			closestRecord,
+			closedList,
+			pStartNode,
+			nodes);
+		return path;
+	}
+	
+	
+	return {};
+}
+
+std::vector<Node*> AStar::ReconstructPath(NodeRecord currentNodeRecord, const std::vector<NodeRecord>& closedList,
+	Node* const pStartNode, const std::vector<Node*>& nodes)
+{
+	std::vector<Node*> path{};
+	while (currentNodeRecord.pNode != pStartNode)
+	{
+		path.push_back(currentNodeRecord.pNode);
+		if (currentNodeRecord.pConnection == nullptr)
+			break;
+		Node* pFromNode = nodes[currentNodeRecord.pConnection->GetFromId()];
+
+		auto it = std::find_if(
+			closedList.begin(),
+			closedList.end(),
+			[pFromNode](const NodeRecord& record)
+			{
+				return record.pNode == pFromNode;
+			});
+
+		if (it == closedList.end())
+			break;
+
+		currentNodeRecord = *it;
+	}
+			
+	path.push_back(pStartNode);
+	std::reverse(path.begin(), path.end());
+			
 	return path;
 }
 
